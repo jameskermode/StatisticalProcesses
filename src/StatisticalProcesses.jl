@@ -99,6 +99,10 @@ function predict(gp::AbstractProcess, xp::AbstractArray)
     return μ, v
 end
 
+(gp::GP)(x) = predict(gp, x)
+
+(stp::STP)(x) = predict(stp, x)
+
 function prior(gp::GP, xp::AbstractArray)
     n = length(xp)
     K = [gp.k(xp[i], xp[j]; gp.kernel_hypers...) for i=1:n, j=1:n]
