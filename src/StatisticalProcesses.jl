@@ -160,7 +160,7 @@ function loglikelihood(stp::STP)
               log(gamma((ν+n)/2) / gamma(ν/2)) - (ν+n)/2*log(1 + β/(ν-2)) )
 end
 
-function optimize_hypers(gp::AbstractProcess; fix=[], initial=nothing, lower=nothing, upper=nothing)
+function optimize_hypers(gp::AbstractProcess; fix=[], initial=nothing, lower=nothing, upper=nothing, laplace=true)
     T = typeof(gp)
     variable_hypers = [p for p in keys(gp.hypers) if !(p in fix) ]
     @show variable_hypers
@@ -198,9 +198,13 @@ function optimize_hypers(gp::AbstractProcess; fix=[], initial=nothing, lower=not
     opt_gp = T(gp.x, gp.y, gp.k; hypers...)
     @show loglikelihood(opt_gp)
 
-    h = ForwardDiff.hessian(L, res.minimizer)
-    L_laplace = -L(res.minimizer)*sqrt(((2π)^length(res.minimizer)) / det(h))
-    println("Marginal likelihood (Laplace approximation): ", L_laplace)
+    if laplace
+        h = ForwardDiff.hessian(L, res.minimizer)
+        L_laplace = -L(res.minimizer)*sqrt(((2π)^length(res.minimizer)) / det(h))
+        println("Marginal likelihood (Laplace approximation): ", L_laplace)
+    else
+        L = res = L_laplace = nothing
+    end
 
     return hypers, (L, res, L_laplace), opt_gp
 end
