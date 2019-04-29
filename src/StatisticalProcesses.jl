@@ -12,7 +12,7 @@ using ForwardDiff
 using Optim
 using SpecialFunctions
 
-export GP, STP, predict, prior, posterior, loglikelihood, optimize_hypers
+export GP, STP, predict, prior, posterior, loglikelihood, optimize_hypers, mean, var, std
 
 abstract type AbstractProcess end
 
@@ -102,6 +102,12 @@ end
 (gp::GP)(x) = predict(gp, x)
 
 (stp::STP)(x) = predict(stp, x)
+
+import StatsBase: mean, var, std
+
+mean(gp::AbstractProcess, x) = first(predict(gp, x))
+var(gp::AbstractProcess, x) = last(predict(gp, x))
+std(gp::AbstractProcess, x) = sqrt.(var(gp, x))
 
 function prior(gp::GP, xp::AbstractArray)
     n = length(xp)
